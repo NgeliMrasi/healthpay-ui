@@ -1,6 +1,7 @@
-import * as StellarSdk from 'stellar-sdk';
+import { Horizon, TransactionBuilder, Networks, Asset, Keypair, Operation } from '@stellar/stellar-sdk';
 
-const server = new StellarSdk.Server('https://horizon-testnet.stellar.org');
+// In the new SDK, 'Server' is now 'Horizon.Server'
+const server = new Horizon.Server('https://horizon-testnet.stellar.org');
 
 export async function processSaaSPayment(
   userSecret: string,
@@ -16,19 +17,19 @@ export async function processSaaSPayment(
   }
 
   const amount = fee.toString();
-  const sourceKeys = StellarSdk.Keypair.fromSecret(userSecret);
+  const sourceKeys = Keypair.fromSecret(userSecret);
   const destinationId = 'GC_YOUR_PLATFORM_TREASURY_ADDRESS'; 
 
   try {
     const account = await server.loadAccount(sourceKeys.publicKey());
-    const transaction = new StellarSdk.TransactionBuilder(account, {
+    const transaction = new TransactionBuilder(account, {
       fee: '100',
-      networkPassphrase: StellarSdk.Networks.TESTNET,
+      networkPassphrase: Networks.TESTNET,
     })
       .addOperation(
-        StellarSdk.Operation.payment({
+        Operation.payment({
           destination: destinationId,
-          asset: StellarSdk.Asset.native(), 
+          asset: Asset.native(), 
           amount: amount,
         })
       )
@@ -56,7 +57,7 @@ export async function getTransactionHistory(accountId: string) {
     return payments.records.map((payment: any) => ({
       id: payment.id,
       amount: payment.amount,
-      asset: payment.asset_type === 'native' ? 'HealthCoin' : payment.asset_code,
+      asset: payment.asset_type === 'native' ? 'HealthCoin' : (payment as any).asset_code,
       from: payment.from,
       created_at: payment.created_at,
     }));
