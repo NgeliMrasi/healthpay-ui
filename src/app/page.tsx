@@ -1,47 +1,63 @@
-import PricingCalculator from './pricing-calculator';
-import TransactionHistory from './transaction-history';
-import OnboardingForm from './onboarding-form';
+import React from 'react';
 
-export default function Home() {
+export default function LandingPage() {
   return (
-    <main className="min-h-screen bg-slate-50 py-8 px-4 pb-20">
-      {/* Header Section */}
-      <div className="max-w-4xl mx-auto text-center mb-10">
-        <h1 className="text-3xl font-extrabold text-slate-900 mb-2 tracking-tighter">
-          HealthPay.Afrika <span className="text-teal-600">Portal</span>
-        </h1>
-        <p className="text-md text-slate-600">2026 Revenue & Disbursement Management</p>
-      </div>
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+      {/* Hero Section */}
+      <header className="bg-blue-600 py-16 px-4 text-center text-white">
+        <h1 className="text-4xl md:text-6xl font-extrabold mb-4">HealthPay.Afrika 🏥</h1>
+        <p className="text-xl opacity-90">Purpose-Bound Health Benefits on the Stellar Blockchain.</p>
+      </header>
 
-      {/* Responsive Grid Layout */}
-      <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-        
-        {/* Left Column: Revenue & History */}
-        <div className="space-y-6">
-          <PricingCalculator />
-          <TransactionHistory />
-        </div>
-
-        {/* Right Column: Onboarding & Batch Actions */}
-        <div className="space-y-6">
-          <OnboardingForm />
+      {/* Pricing Section */}
+      <section className="max-w-6xl mx-auto py-16 px-4">
+        <h2 className="text-3xl font-bold text-center mb-12">Flexible Pricing for Every SME</h2>
+        <div className="grid md:grid-cols-3 gap-8">
           
-          {/* Summary Card */}
-          <div className="p-6 bg-slate-900 rounded-2xl text-white shadow-xl">
-            <h4 className="font-bold text-teal-400 mb-2">Platform Summary</h4>
-            <div className="text-sm space-y-2 opacity-90">
-              <p>• SME Tier: R499 (1-10 staff)</p>
-              <p>• Growth Tier: Stepped (11-150 staff)</p>
-              <p>• Corporate Tier: R100/head (151+ staff)</p>
-            </div>
+          {/* SME Tier */}
+          <div className="bg-white p-8 rounded-2xl shadow-lg border border-slate-200">
+            <h3 className="text-xl font-bold mb-2">SME</h3>
+            <p className="text-slate-500 mb-4">1-10 Employees</p>
+            <div className="text-4xl font-bold mb-6">R499<span className="text-lg font-normal text-slate-400">/mo</span></div>
+            <ul className="space-y-3 text-sm">
+              <li>✅ WhatsApp Dashboard</li>
+              <li>✅ Stellar Blockchain Ledger</li>
+              <li>✅ Purpose-Bound Rules</li>
+            </ul>
           </div>
+
+          {/* Growth Tier */}
+          <div className="bg-white p-8 rounded-2xl shadow-lg border-2 border-blue-500 relative">
+            <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-500 text-white px-4 py-1 rounded-full text-xs font-bold uppercase">Popular</span>
+            <h3 className="text-xl font-bold mb-2">Growth</h3>
+            <p className="text-slate-500 mb-4">11-150 Employees</p>
+            <div className="text-4xl font-bold mb-6">R2.5k - R5k<span className="text-lg font-normal text-slate-400">/mo</span></div>
+            <ul className="space-y-3 text-sm">
+              <li>✅ Everything in SME</li>
+              <li>✅ Stepped Flat Rates</li>
+              <li>✅ Employer Audit API</li>
+            </ul>
+          </div>
+
+          {/* Corporate Tier */}
+          <div className="bg-white p-8 rounded-2xl shadow-lg border border-slate-200">
+            <h3 className="text-xl font-bold mb-2">Corporate</h3>
+            <p className="text-slate-500 mb-4">151+ Employees</p>
+            <div className="text-4xl font-bold mb-6">R100<span className="text-lg font-normal text-slate-400">/head</span></div>
+            <ul className="space-y-3 text-sm">
+              <li>✅ Custom Health Rules</li>
+              <li>✅ Priority Settlement</li>
+              <li>✅ Full API Access</li>
+            </ul>
+          </div>
+
         </div>
+      </section>
 
-      </div>
-
-      <footer className="mt-16 text-center text-slate-400 text-xs">
-        <p>© 2026 HealthPay Platform • Powered by HealthCoin & Stellar Testnet</p>
+      {/* Footer Branding */}
+      <footer className="text-center py-10 text-slate-400 text-sm">
+        Built on Stellar Testnet • No Withdrawals • Purpose Bound
       </footer>
-    </main>
+    </div>
   );
 }
