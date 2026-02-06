@@ -1,6 +1,6 @@
-import { Server, TransactionBuilder, Networks, Asset, Keypair, Operation } from 'stellar-sdk';
+import * as StellarSdk from 'stellar-sdk';
 
-const server = new Server('https://horizon-testnet.stellar.org');
+const server = new StellarSdk.Server('https://horizon-testnet.stellar.org');
 
 export async function processSaaSPayment(
   userSecret: string,
@@ -8,27 +8,27 @@ export async function processSaaSPayment(
 ) {
   let fee = 0;
   if (employeeCount <= 10) {
-    fee = 499; // SME Flat Rate
+    fee = 499; 
   } else if (employeeCount <= 150) {
     fee = employeeCount <= 80 ? 2500 : 5000;
   } else {
-    fee = employeeCount * 100; // Corporate R100/head
+    fee = employeeCount * 100;
   }
 
   const amount = fee.toString();
-  const sourceKeys = Keypair.fromSecret(userSecret);
+  const sourceKeys = StellarSdk.Keypair.fromSecret(userSecret);
   const destinationId = 'GC_YOUR_PLATFORM_TREASURY_ADDRESS'; 
 
   try {
     const account = await server.loadAccount(sourceKeys.publicKey());
-    const transaction = new TransactionBuilder(account, {
+    const transaction = new StellarSdk.TransactionBuilder(account, {
       fee: '100',
-      networkPassphrase: Networks.TESTNET,
+      networkPassphrase: StellarSdk.Networks.TESTNET,
     })
       .addOperation(
-        Operation.payment({
+        StellarSdk.Operation.payment({
           destination: destinationId,
-          asset: Asset.native(), 
+          asset: StellarSdk.Asset.native(), 
           amount: amount,
         })
       )
@@ -63,5 +63,16 @@ export async function getTransactionHistory(accountId: string) {
   } catch (error) {
     console.error('Failed to fetch history:', error);
     return [];
+  }
+}
+
+export async function getAccountBalance(publicKey: string) {
+  try {
+    const account = await server.loadAccount(publicKey);
+    const nativeBalance = account.balances.find((b: any) => b.asset_type === 'native');
+    return nativeBalance ? (nativeBalance as any).balance : '0';
+  } catch (error) {
+    console.error('Balance fetch failed:', error);
+    return '0';
   }
 }
