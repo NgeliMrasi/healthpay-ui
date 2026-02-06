@@ -4,30 +4,43 @@ import OnboardingForm from './onboarding-form';
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-slate-50 py-12 px-4 pb-24">
-      <div className="max-w-4xl mx-auto text-center mb-12">
-        <h1 className="text-4xl font-extrabold text-slate-900 mb-4 tracking-tighter">
+    <main className="min-h-screen bg-slate-50 py-8 px-4 pb-20">
+      {/* Header Section */}
+      <div className="max-w-4xl mx-auto text-center mb-10">
+        <h1 className="text-3xl font-extrabold text-slate-900 mb-2 tracking-tighter">
           HealthPay.Afrika <span className="text-teal-600">Portal</span>
         </h1>
-        <p className="text-lg text-slate-600 italic">"Simplifying Corporate Health Disbursements"</p>
+        <p className="text-md text-slate-600">2026 Revenue & Disbursement Management</p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-        <div className="space-y-8">
+      {/* Responsive Grid Layout */}
+      <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        {/* Left Column: Revenue & History */}
+        <div className="space-y-6">
           <PricingCalculator />
           <TransactionHistory />
         </div>
-        <div>
+
+        {/* Right Column: Onboarding & Batch Actions */}
+        <div className="space-y-6">
           <OnboardingForm />
-          <div className="mt-8 p-6 bg-teal-900 rounded-2xl text-white shadow-lg">
-            <h4 className="font-bold mb-2">Corporate Stats</h4>
-            <p className="text-teal-200 text-sm">Every new staff member adds 100 HealthCoins to your monthly SaaS fee.</p>
+          
+          {/* Summary Card */}
+          <div className="p-6 bg-slate-900 rounded-2xl text-white shadow-xl">
+            <h4 className="font-bold text-teal-400 mb-2">Platform Summary</h4>
+            <div className="text-sm space-y-2 opacity-90">
+              <p>• SME Tier: R499 (1-10 staff)</p>
+              <p>• Growth Tier: Stepped (11-150 staff)</p>
+              <p>• Corporate Tier: R100/head (151+ staff)</p>
+            </div>
           </div>
         </div>
+
       </div>
 
-      <footer className="mt-20 text-center text-slate-400 text-sm">
-        <p>© 2026 HealthPay Platform • Running on Stellar Testnet</p>
+      <footer className="mt-16 text-center text-slate-400 text-xs">
+        <p>© 2026 HealthPay Platform • Powered by HealthCoin & Stellar Testnet</p>
       </footer>
     </main>
   );
