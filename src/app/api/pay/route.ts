@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { processSaaSPayment } from '@/lib/stellar-service';
+// Using relative path to bypass alias issues
+import { processSaaSPayment } from '../../../lib/stellar-service';
 
 export async function POST(request: Request) {
   try {
