@@ -4,7 +4,6 @@ import { getAccountBalance } from '../../../lib/stellar-service';
 const VALID_CODES: Record<string, string> = { 'JOIN-SUP-1VPD': 'SuperCare' };
 const PROVIDERS: Record<string, string> = { 'CLINIC101': 'City Central Clinic' };
 
-// We use a broader check for your number
 const IS_ADMIN_USER = (num: string) => num.includes('27648782381') || num.includes('27712345678');
 
 export async function POST(request: Request) {
@@ -15,10 +14,6 @@ export async function POST(request: Request) {
 
   let responseText = "";
 
-  // 1. Check if user is "Known"
-  const isKnown = IS_ADMIN_USER(fromNumber) || VALID_CODES[body];
-
-  // 2. Routing Logic
   if (VALID_CODES[body]) {
     responseText = `✅ *Access Granted!*\n\nYou are now linked to *${VALID_CODES[body]}*.\n\nType *0* for the Menu.`;
   }
@@ -32,14 +27,22 @@ export async function POST(request: Request) {
   else if (PROVIDERS[body] && IS_ADMIN_USER(fromNumber)) {
     responseText = `🩺 *Paying ${PROVIDERS[body]}*\n\nPlease enter the *Amount* (e.g., 50):`;
   }
-  else if (!isNaN(Number(body)) && Number(body) > 0 && IS_ADMIN_USER(fromNumber) && body !== '1' && body !== '4') {
-    responseText = `✅ *Payment Authorized*\n\nAmount: *${body} HealthCoins*\nStatus: *Success*\n\n🔗 *Receipt:* https://stellar.expert/explorer/testnet/account/${activeWallet}`;
+  // NEW: GUARDRAIL LOGIC
+  else if (!isNaN(Number(body)) && Number(body) > 0 && IS_ADMIN_USER(fromNumber)) {
+    const amount = Number(body);
+    const currentBalance = Number(await getAccountBalance(activeWallet));
+
+    if (amount > currentBalance) {
+      responseText = `❌ *Transaction Declined*\n\nReason: Insufficient HealthCoins.\nAvailable: *${currentBalance}*\n\nPlease contact your HR Manager at *SuperCare* to top up.`;
+    } else {
+      responseText = `✅ *Payment Authorized*\n\nAmount: *${amount} HealthCoins*\nStatus: *Success*\n\n🔗 *Receipt:* https://stellar.expert/explorer/testnet/account/${activeWallet}`;
+    }
   }
   else if (body === '0' || body === 'HI' || body === 'MENU' || IS_ADMIN_USER(fromNumber)) {
     responseText = "🏥 *HealthPay: SuperCare*\n\n1. *Balance*\n2. *Help*\n4. *Pay Provider*\n\nReply with a number.";
   }
   else {
-    responseText = "👋 *Welcome to HealthPay.Afrika*\n\nPlease enter your *Company Invite Code* to begin:";
+    responseText = "👋 *Welcome to HealthPay.Afrika*\n\nPlease enter your *Company Invite Code*:";
   }
 
   const twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Message>${responseText}</Message></Response>`;
