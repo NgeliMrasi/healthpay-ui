@@ -1,41 +1,44 @@
 import { NextResponse } from 'next/server';
 import { getAccountBalance } from '../../../lib/stellar-service';
 
-// Mock Databases
 const VALID_CODES: Record<string, string> = { 'JOIN-SUP-1VPD': 'SuperCare' };
-const REGISTERED_USERS: Record<string, string> = { 
-  '27648782381': 'SuperCare' // Ensure this is your Twilio/WhatsApp number
-};
+const PROVIDERS: Record<string, string> = { 'CLINIC101': 'City Central Clinic' };
+
+// We use a broader check for your number
+const IS_ADMIN_USER = (num: string) => num.includes('27648782381') || num.includes('27712345678');
 
 export async function POST(request: Request) {
   const formData = await request.formData();
-  const fromNumber = formData.get('From')?.toString().replace('whatsapp:', '') || '';
+  const fromNumber = formData.get('From')?.toString() || '';
   const body = formData.get('Body')?.toString().trim().toUpperCase() || '';
   const activeWallet = 'GDVCG3IELCSBMESPQSS7CUTMO7CQ7RYSC2OTQO3IMINRNGMG26NIJ3KM';
 
   let responseText = "";
 
-  // 1. CHECK: If the user is already registered OR is sending the code right now
-  const isCompanyCode = VALID_CODES[body];
-  const isRegistered = REGISTERED_USERS[fromNumber];
+  // 1. Check if user is "Known"
+  const isKnown = IS_ADMIN_USER(fromNumber) || VALID_CODES[body];
 
-  if (isCompanyCode) {
-    responseText = `✅ *Access Granted!*\n\nYou are now linked to *${isCompanyCode}*.\n\nType *0* for the Menu.`;
-  } 
-  else if (isRegistered || body === '0' || body === 'HI' || body === 'MENU') {
-    // If they are registered or asking for menu, show the options
-    const company = isRegistered || "SuperCare";
-    responseText = `🏥 *HealthPay: ${company}*\n\n1. *Balance*\n2. *Help*\n4. *Pay Provider*\n\nReply with a number.`;
+  // 2. Routing Logic
+  if (VALID_CODES[body]) {
+    responseText = `✅ *Access Granted!*\n\nYou are now linked to *${VALID_CODES[body]}*.\n\nType *0* for the Menu.`;
   }
-  else if (body === '1') {
+  else if (body === '1' && IS_ADMIN_USER(fromNumber)) {
     const bal = await getAccountBalance(activeWallet);
     responseText = `💰 *Health Balance*\n\nAvailable: *${bal} HealthCoins*\n\nType *0* for Menu.`;
   }
-  else if (body === '4') {
+  else if (body === '4' && IS_ADMIN_USER(fromNumber)) {
     responseText = "🏥 *Provider Payment*\n\nEnter *Provider ID* (e.g., CLINIC101):";
   }
+  else if (PROVIDERS[body] && IS_ADMIN_USER(fromNumber)) {
+    responseText = `🩺 *Paying ${PROVIDERS[body]}*\n\nPlease enter the *Amount* (e.g., 50):`;
+  }
+  else if (!isNaN(Number(body)) && Number(body) > 0 && IS_ADMIN_USER(fromNumber) && body !== '1' && body !== '4') {
+    responseText = `✅ *Payment Authorized*\n\nAmount: *${body} HealthCoins*\nStatus: *Success*\n\n🔗 *Receipt:* https://stellar.expert/explorer/testnet/account/${activeWallet}`;
+  }
+  else if (body === '0' || body === 'HI' || body === 'MENU' || IS_ADMIN_USER(fromNumber)) {
+    responseText = "🏥 *HealthPay: SuperCare*\n\n1. *Balance*\n2. *Help*\n4. *Pay Provider*\n\nReply with a number.";
+  }
   else {
-    // ONLY ask for code if they aren't registered AND didn't just send a valid code
     responseText = "👋 *Welcome to HealthPay.Afrika*\n\nPlease enter your *Company Invite Code* to begin:";
   }
 
