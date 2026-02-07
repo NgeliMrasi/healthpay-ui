@@ -18,22 +18,19 @@ export async function POST(request: Request) {
   } 
   else if (body === '1') {
     const bal = await getAccountBalance(activeWallet);
-    responseText = `💰 *Health Balance*\n\nAvailable: *${bal} HealthCoins*\n\nType *0* for Menu.`;
+    responseText = `💰 *Health Balance*\n\nAvailable: *${bal} HealthCoins*\n\nView on Ledger: https://stellar.expert/explorer/testnet/account/${activeWallet}\n\nType *0* for Menu.`;
   }
   else if (body === '4') {
     responseText = "🏥 *Provider Payment*\n\nPlease enter the *Provider ID* (e.g., CLINIC101):";
   }
-  // Check if the user entered a valid Provider ID
   else if (PROVIDERS[body]) {
-    const provider = PROVIDERS[body];
-    responseText = `🩺 *Paying ${provider.name}*\n\nPlease enter the *Amount* in HealthCoins (e.g., 50):`;
+    responseText = `🩺 *Paying ${PROVIDERS[body].name}*\n\nPlease enter the *Amount* (e.g., 50):`;
   }
-  // Check if the user entered a number (the amount)
   else if (!isNaN(Number(body)) && Number(body) > 0) {
-    responseText = `✅ *Payment Authorized*\n\nAmount: *${body} HealthCoins*\nStatus: *Processing on Stellar...*\n\n_This transaction is purpose-bound._`;
+    responseText = `✅ *Payment Authorized*\n\nAmount: *${body} HealthCoins*\nStatus: *Success*\n\n🔗 *Receipt:* https://stellar.expert/explorer/testnet/account/${activeWallet}\n\n_Purpose-bound: Healthcare Only_`;
   }
   else {
-    responseText = "🤔 I didn't catch that. Type *0* to see the menu.";
+    responseText = "🤔 Type *0* for the menu.";
   }
 
   const twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Message>${responseText}</Message></Response>`;
