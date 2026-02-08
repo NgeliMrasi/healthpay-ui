@@ -1,8 +1,26 @@
 import * as StellarSdk from '@stellar/stellar-sdk';
 
+const server = new StellarSdk.Horizon.Server('https://horizon-testnet.stellar.org');
+
+/**
+ * Fetches HealthCoin balance for any given public key
+ */
+export async function getAccountBalance(publicKey: string) {
+    try {
+        const account = await server.loadAccount(publicKey);
+        const healthCoin = account.balances.find((b: any) => b.asset_code === 'HealthCoin');
+        return healthCoin ? healthCoin.balance : '0.0000000';
+    } catch (error) {
+        console.error('Error fetching balance:', error);
+        return '0.0000000';
+    }
+}
+
+/**
+ * HealthPay Rail Logic
+ * Purpose-bound HealthCoin payments with a 1.5% fee
+ */
 export async function processSaaSPayment(amount: string, destination: string) {
-    const server = new StellarSdk.Horizon.Server('https://horizon-testnet.stellar.org');
-    
     const sourceSecret = process.env.HEALTHPAY_SOURCE_SECRET; 
     const issuerAddress = process.env.NEXT_PUBLIC_ISSUER_ADDRESS;
     const healthPayFeeWallet = process.env.HEALTHPAY_REVENUE_WALLET;
@@ -44,5 +62,5 @@ export async function processSaaSPayment(amount: string, destination: string) {
     }
 }
 
-// satisfy both possible import names to avoid Turbopack build errors
+// Alias for flexibility
 export const sendPayment = processSaaSPayment;
