@@ -18,20 +18,19 @@ export async function POST(req) {
       reply = `💰 Live Balance: ${liveBalance} HC\n\nVerified on Stellar Ledger.`;
     } 
     else if (msg === '2' || msg === 'JOIN') {
-      reply = "🏢 *HealthPay Registration*\n\nPlease reply with your COMPANY NAME to start your R499 SME plan.";
+      reply = "🏢 *HealthPay SME Tiers*\n\nPick your package:\nA: 1-10 Employees (R499/pm)\nB: 11-50 Employees (R1999/pm)\nC: 50+ Employees (Custom)\n\nReply with 'COMPANY NAME + TIER' (e.g., Body Repair Cartel A)";
     }
-    else if (body.length > 2 && !['1','2','3','MENU'].includes(msg)) {
-      // This catches the actual name of the company
-      reply = `✅ REGISTERED: *${body}*\n\nWelcome to the network. Your SaaS fee is R150/employee. Check your dashboard at healthpay-ui.vercel.app to manage HealthCoins.`;
+    else if (body.length > 3 && !['1','2','3','MENU'].includes(msg)) {
+      reply = `✅ REGISTERED: *${body}*\n\nYour selected tier is active. No per-employee SaaS fees applied. Purpose-bound HealthCoins are now ready for distribution!`;
     }
     else {
-      reply = "HealthPay.Afrika 🏥\n\n1: Check Balance\n2: Register SME (R499)\n3: Support";
+      reply = "HealthPay.Afrika 🏥\n\n1: Check Balance\n2: Pick SME Package & Register\n3: Support";
     }
 
     const twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Message>${reply}</Message></Response>`;
     return new NextResponse(twiml, { headers: { 'Content-Type': 'text/xml' } });
 
   } catch (err) {
-    return new NextResponse('<Response><Message>System updating...</Message></Response>', { headers: { 'Content-Type': 'text/xml' } });
+    return new NextResponse('<Response><Message>Updating logic...</Message></Response>', { headers: { 'Content-Type': 'text/xml' } });
   }
 }
