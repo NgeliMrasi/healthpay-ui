@@ -2,36 +2,40 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req) {
   const REVENUE_ADDR = "GA7IODL3GYTNCMVOYOHOHYPRLECJEOY54MG5XRHF3TVROJ7XG4I5BGQ5";
+  const COMPANY = "Body Repair Cartel";
   
   try {
     const formData = await req.formData();
+    const from = formData.get('From') || 'User';
     const body = formData.get('Body') || '';
     const msg = body.trim().toUpperCase();
     
     let reply = "";
     let mediaUrl = "";
 
-    if (msg === '1' || msg === 'BALANCE') {
-      reply = "💰 *Live Ledger Balance*\n\nFetching data from Stellar Testnet...";
+    // 1. PERSONALIZED QR GENERATION
+    if (msg === 'QR' || msg === 'CODE') {
+      const staffID = from.replace('whatsapp:', '');
+      reply = `🏥 *HealthPay ID: ${COMPANY}*\n\nVerified Member: ${staffID}\nStatus: ACTIVE (Tier B)\n\nScan at clinic to authorize HC payment.`;
+      
+      // We encode the Company and Phone directly into the QR data
+      const qrData = encodeURIComponent(`HP-ID|${COMPANY}|${staffID}`);
+      mediaUrl = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${qrData}`;
     } 
-    // FIXED QR COMMAND
-    else if (msg === 'QR' || msg === 'CODE') {
-      reply = "🏥 *Your HealthPay ID*\n\nScan this at any registered clinic to authorize payment from the Body Repair Cartel pool.";
-      mediaUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${REVENUE_ADDR}`;
+    // 2. BALANCE
+    else if (msg === '1' || msg === 'BALANCE') {
+      reply = `💰 *${COMPANY} Ledger*\n\nStatus: Online\nNetwork: Stellar Testnet\nPurpose: Healthcare Only`;
     }
+    // 3. SPEND
     else if (msg.startsWith('SPEND')) {
       const amount = msg.replace('SPEND', '').trim();
-      reply = `🏥 *Payment Authorized*\nAmount: ${amount} HC\nStatus: PENDING\n\nVerified Purpose-Bound Transaction.`;
+      reply = `✅ *Payment Locked*\n\nAmount: ${amount} HC\nFrom: ${from.replace('whatsapp:', '')}\n\nAuthorized by HealthPay.Afrika`;
     }
-    else if (msg.startsWith('ADD')) {
-      const staffNum = msg.replace('ADD', '').trim();
-      reply = `👤 *Staff Member Registered: ${staffNum}*\n\nThey can now use 'QR' to get their ID.`;
-    }
+    // 4. MAIN MENU
     else {
-      reply = "HealthPay.Afrika 🏥\n\n1: Check Balance\nQR: Get your QR ID\nADD [Num]: Register Staff\nSPEND [Amt]: Clinic Payment";
+      reply = `HealthPay.Afrika 🏥\n\n1: Balance\nQR: My Personalized ID\nSPEND [Amt]: Pay Clinic\n\nWelcome back to the ${COMPANY} portal.`;
     }
 
-    // Standard Twilio XML Response
     const twiml = `<?xml version="1.0" encoding="UTF-8"?>
     <Response>
       <Message>
@@ -43,6 +47,6 @@ export async function POST(req) {
     return new NextResponse(twiml, { headers: { 'Content-Type': 'text/xml' } });
 
   } catch (err) {
-    return new NextResponse('<Response><Message>Bot is restarting...</Message></Response>', { headers: { 'Content-Type': 'text/xml' } });
+    return new NextResponse('<Response><Message>Bot refreshing...</Message></Response>', { headers: { 'Content-Type': 'text/xml' } });
   }
 }
