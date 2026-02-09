@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 
-// Mock Database for the Loop (In production, use Supabase)
-const MERCHANT_WALLET = "GC...CLINIC_ADDR"; 
+// Note: In a stateless Vercel function, we'd usually pull this from Supabase.
+// For this demo, we'll simulate the calculation.
+let totalBalance = 5000; 
 
 export async function POST(req) {
+  const COMPANY = "Body Repair Cartel";
+  
   try {
     const formData = await req.formData();
     const from = (formData.get('From') || '').replace('whatsapp:', '');
@@ -12,37 +15,38 @@ export async function POST(req) {
     
     let reply = "";
 
-    // --- 1. SME/EMPLOYEE ONBOARDING ---
+    // 1. ADD STAFF
     if (msg.startsWith('ADD')) {
       const staffNum = msg.replace('ADD', '').trim();
-      reply = `👤 *ONBOARDING SUCCESS*\n\nEmployee: ${staffNum}\nCompany: Body Repair Cartel\nTier: Growth B\n\nThey can now check balance by texting '1'.`;
+      reply = `👤 *ONBOARDING SUCCESS*\n\nEmployee: ${staffNum}\nCompany: ${COMPANY}\n\nThey are now authorized to spend from the R1,999 Growth Pool.`;
     }
 
-    // --- 2. MERCHANT ONBOARDING ---
+    // 2. REGISTER CLINIC
     else if (msg.startsWith('CLINIC')) {
       const clinicName = msg.replace('CLINIC', '').trim();
-      reply = `🏥 *MERCHANT VERIFIED*\n\nClinic: ${clinicName}\nStatus: Whitelisted\n\nYou are now authorized to accept HealthCoin (HC).`;
+      reply = `🏥 *MERCHANT VERIFIED*\n\nClinic: ${clinicName}\nStatus: Whitelisted\n\nReady to receive HC on Stellar Testnet.`;
     }
 
-    // --- 3. DISBURSEMENT / SPENDING ---
+    // 3. DYNAMIC SPENDING
     else if (msg.startsWith('SPEND')) {
-      const amount = msg.split(' ')[1];
+      const amount = parseInt(msg.split(' ')[1]);
       if (!amount || isNaN(amount)) {
-        reply = "⚠️ Format: SPEND [Amount]";
+        reply = "⚠️ Use: SPEND [Amount]";
       } else {
-        // In a real loop, this triggers a Stellar Transaction
-        reply = `💸 *HEALTHCOIN TRANSFER*\n\nFrom: ${from}\nTo: Whitelisted Merchant\nAmount: ${amount} HC\n\n[STALLAR TESTNET CONFIRMED]`;
+        // Here we simulate the deduction
+        const newBalance = 5000 - amount; 
+        reply = `💸 *HEALTHCOIN TRANSFER*\n\nFrom: ${from}\nTo: Whitelisted Merchant\nAmount: ${amount} HC\n\n[STALLAR TESTNET CONFIRMED]\nRemaining Pool: ${newBalance} HC`;
       }
     }
 
-    // --- 4. STATUS/BALANCE ---
+    // 4. CHECK BALANCE
     else if (msg === '1' || msg === 'BALANCE') {
-      reply = `💰 *CORPORATE VAULT*\n\nEntity: Body Repair Cartel\nAvailable: 5000.00 HC\n\nAll funds are Purpose-Bound.`;
+      // In this demo version, we'll show the base pool
+      reply = `💰 *${COMPANY} VAULT*\n\nTotal Pool: 5000.00 HC\nStatus: Online\n\nAll HC is purpose-bound to your whitelisted clinics.`;
     }
 
-    // --- MAIN MENU ---
     else {
-      reply = `*HealthPay.Afrika: Closed Loop* 🏥\n\n*SME:* ADD [Number]\n*MERCHANT:* CLINIC [Name]\n*SPEND:* SPEND [Amount]\n*CHECK:* 1`;
+      reply = `*HealthPay.Afrika: Closed Loop* 🏥\n\n1: Check Balance\nADD [Number]: Add Staff\nCLINIC [Name]: Onboard Doctor\nSPEND [Amount]: Pay Clinic`;
     }
 
     const twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Message><Body>${reply}</Body></Message></Response>`;
