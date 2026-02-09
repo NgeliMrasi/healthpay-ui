@@ -9,39 +9,41 @@ export async function POST(req) {
     const msg = body.trim().toUpperCase();
     
     let reply = "";
+    let mediaUrl = "";
 
     // 1. BALANCE CHECK
     if (msg === '1' || msg === 'BALANCE') {
-      const res = await fetch(`https://horizon-testnet.stellar.org/accounts/${REVENUE_ADDR}`);
-      const data = await res.json();
-      const hcAsset = data.balances.find(b => b.asset_code === 'HC');
-      const liveBalance = hcAsset ? parseFloat(hcAsset.balance).toFixed(7) : "0.0000000";
-      reply = `💰 Live Balance: ${liveBalance} HC\n\nVerified on Stellar Ledger. No withdrawal allowed.`;
+      reply = "💰 Checking Stellar Ledger...";
     } 
-    // 2. SPEND LOGIC (The "Medical Lock")
+    // 2. GENERATE QR COMMAND
+    else if (msg === 'QR' || msg === 'CODE') {
+      reply = "🏥 *Your HealthPay ID*\n\nShow this at the clinic for verification.";
+      mediaUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${REVENUE_ADDR}`;
+    }
+    // 3. SPEND LOGIC
     else if (msg.startsWith('SPEND')) {
       const amount = msg.replace('SPEND', '').trim();
-      if (!amount || isNaN(amount)) {
-        reply = "⚠️ Please specify an amount. Example: SPEND 250";
-      } else {
-        reply = `🏥 *Payment Authorized*\n\nAmount: ${amount} HC\nMerchant: Medical Provider\nStatus: PENDING SETTLEMENT\n\nNote: This transaction is purpose-bound and cannot be reversed for cash.`;
-      }
+      reply = `🏥 *Auth Success*\nAmount: ${amount} HC\nStatus: PENDING\n\nThis is purpose-bound.`;
     }
-    // 3. STAFF REGISTRATION
+    // 4. STAFF REGISTRATION
     else if (msg.startsWith('ADD')) {
       const staffNum = msg.replace('ADD', '').trim();
-      reply = `👤 *Staff Registered!*\n\nPhone: ${staffNum}\nStatus: Active\nBenefit: Growth Tier (B)`;
-    }
-    // 4. SME TIER SELECTION
-    else if (msg === '2' || msg === 'JOIN') {
-      reply = "🏢 *HealthPay SME Tiers*\n\nPick your package:\nA: 1-10 Employees (R499/pm)\nB: 11-50 Employees (R1999/pm)\nC: 50+ Employees (Custom)";
+      reply = `👤 *Staff Added: ${staffNum}*\n\nGenerating their unique HealthPay QR...`;
+      mediaUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=STAFF_${staffNum}`;
     }
     // 5. MAIN MENU
     else {
-      reply = "HealthPay.Afrika 🏥\n\n1: Check Balance\n2: Register SME\n3: Add Staff\n\nReply 'SPEND [Amount]' at a clinic.";
+      reply = "HealthPay.Afrika 🏥\n\n1: Balance\nQR: Get your QR Code\nADD [Num]: Add Staff\nSPEND [Amt]: Pay Clinic";
     }
 
-    const twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Message>${reply}</Message></Response>`;
+    // Twilio TwiML with optional Media
+    let twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Message>`;
+    twiml += `<Body>${reply}</Body>`;
+    if (mediaUrl) {
+      twiml += `<Media>${mediaUrl}</Media>`;
+    }
+    twiml += `</Message></Response>`;
+    
     return new NextResponse(twiml, { headers: { 'Content-Type': 'text/xml' } });
 
   } catch (err) {
