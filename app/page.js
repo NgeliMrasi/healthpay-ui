@@ -25,6 +25,11 @@ export default function Home() {
             Merchant Terminal
           </Link>
         </div>
+        <div style={{ padding: "30px", border: "2px solid #e2e8f0", borderRadius: "15px", textAlign: "left", gridColumn: "1 / -1" }}>
+          <h3 style={{ marginTop: 0 }}>For Employees</h3>
+          <p style={{ fontSize: "14px", color: "#4a5568" }}>Check your balance and pay via WhatsApp. No app needed. Simple & Private.</p>
+          <Link href="/chat" style={{ display: "inline-block", marginTop: "10px", padding: "10px 20px", backgroundColor: "#25D366", color: "white", textDecoration: "none", borderRadius: "5px", fontWeight: "bold" }}>Launch WhatsApp Sim</Link>
+        </div>
       </section>
 
       <footer style={{ borderTop: '1px solid #eee', paddingTop: '20px' }}>
