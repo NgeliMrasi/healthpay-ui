@@ -11,42 +11,38 @@ export async function POST(req) {
     let reply = "";
     let mediaUrl = "";
 
-    // 1. BALANCE CHECK
     if (msg === '1' || msg === 'BALANCE') {
-      reply = "💰 Checking Stellar Ledger...";
+      reply = "💰 *Live Ledger Balance*\n\nFetching data from Stellar Testnet...";
     } 
-    // 2. GENERATE QR COMMAND
+    // FIXED QR COMMAND
     else if (msg === 'QR' || msg === 'CODE') {
-      reply = "🏥 *Your HealthPay ID*\n\nShow this at the clinic for verification.";
+      reply = "🏥 *Your HealthPay ID*\n\nScan this at any registered clinic to authorize payment from the Body Repair Cartel pool.";
       mediaUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${REVENUE_ADDR}`;
     }
-    // 3. SPEND LOGIC
     else if (msg.startsWith('SPEND')) {
       const amount = msg.replace('SPEND', '').trim();
-      reply = `🏥 *Auth Success*\nAmount: ${amount} HC\nStatus: PENDING\n\nThis is purpose-bound.`;
+      reply = `🏥 *Payment Authorized*\nAmount: ${amount} HC\nStatus: PENDING\n\nVerified Purpose-Bound Transaction.`;
     }
-    // 4. STAFF REGISTRATION
     else if (msg.startsWith('ADD')) {
       const staffNum = msg.replace('ADD', '').trim();
-      reply = `👤 *Staff Added: ${staffNum}*\n\nGenerating their unique HealthPay QR...`;
-      mediaUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=STAFF_${staffNum}`;
+      reply = `👤 *Staff Member Registered: ${staffNum}*\n\nThey can now use 'QR' to get their ID.`;
     }
-    // 5. MAIN MENU
     else {
-      reply = "HealthPay.Afrika 🏥\n\n1: Balance\nQR: Get your QR Code\nADD [Num]: Add Staff\nSPEND [Amt]: Pay Clinic";
+      reply = "HealthPay.Afrika 🏥\n\n1: Check Balance\nQR: Get your QR ID\nADD [Num]: Register Staff\nSPEND [Amt]: Clinic Payment";
     }
 
-    // Twilio TwiML with optional Media
-    let twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Message>`;
-    twiml += `<Body>${reply}</Body>`;
-    if (mediaUrl) {
-      twiml += `<Media>${mediaUrl}</Media>`;
-    }
-    twiml += `</Message></Response>`;
+    // Standard Twilio XML Response
+    const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+    <Response>
+      <Message>
+        <Body>${reply}</Body>
+        ${mediaUrl ? `<Media>${mediaUrl}</Media>` : ''}
+      </Message>
+    </Response>`;
     
     return new NextResponse(twiml, { headers: { 'Content-Type': 'text/xml' } });
 
   } catch (err) {
-    return new NextResponse('<Response><Message>System busy...</Message></Response>', { headers: { 'Content-Type': 'text/xml' } });
+    return new NextResponse('<Response><Message>Bot is restarting...</Message></Response>', { headers: { 'Content-Type': 'text/xml' } });
   }
 }
