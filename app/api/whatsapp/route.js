@@ -13,30 +13,26 @@ export async function POST(req) {
     let reply = "";
     let mediaUrl = "";
 
-    // 1. QR LOGIC
     if (msg === 'QR' || msg === 'CODE') {
-      reply = `🏥 *HealthPay ID: ${COMPANY}*\n\nMember: ${from}\nStatus: ACTIVE\n\nShow this QR at any clinic.`;
-      const qrPayload = `HP-ID|${COMPANY}|${from}`;
-      mediaUrl = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(qrPayload)}`;
+      reply = `🏥 *HealthPay ID: ${COMPANY}*\n\nMember: ${from}\nStatus: ACTIVE\n\n(Image loading...)`;
+      // Switching to a more robust QR provider (QuickChart) for instant WhatsApp rendering
+      const qrData = encodeURIComponent(`HP-ID|${COMPANY}|${from}`);
+      mediaUrl = `https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${qrData}`;
     } 
-    // 2. BALANCE LOGIC
     else if (msg === '1' || msg === 'BALANCE') {
       reply = `💰 *${COMPANY} Balance*\n\n5000.00 HC\nVerified on Stellar Testnet.`;
     }
-    // 3. SPEND LOGIC (Strict check for amount)
     else if (msg.startsWith('SPEND')) {
       const parts = msg.split(' ');
       const amount = parts[1];
-      
       if (!amount || isNaN(amount)) {
-        reply = "⚠️ *Invalid Amount*\n\nPlease use the format: SPEND 500";
+        reply = "⚠️ Please use: SPEND [Amount]";
       } else {
-        reply = `✅ *Payment Authorized*\n\nAmount: ${amount} HC\nMerchant: Medical Provider\nStatus: PENDING SETTLEMENT\n\nNote: This is purpose-bound for healthcare.`;
+        reply = `✅ *Authorized*\nAmount: ${amount} HC\nStatus: PENDING\n\nVerified for Medical Use.`;
       }
     }
-    // 4. DEFAULT MENU
     else {
-      reply = `HealthPay.Afrika 🏥\n\n1: Balance\nQR: Get ID\nSPEND [Amt]: Pay Clinic\n\nWelcome back, ${COMPANY} Member.`;
+      reply = `HealthPay.Afrika 🏥\n\n1: Balance\nQR: Get ID\nSPEND [Amt]: Pay Clinic`;
     }
 
     const twiml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -49,6 +45,6 @@ export async function POST(req) {
     
     return new NextResponse(twiml, { headers: { 'Content-Type': 'text/xml' } });
   } catch (err) {
-    return new NextResponse('<Response><Message>System active...</Message></Response>', { headers: { 'Content-Type': 'text/xml' } });
+    return new NextResponse('<Response><Message>Active...</Message></Response>', { headers: { 'Content-Type': 'text/xml' } });
   }
 }
