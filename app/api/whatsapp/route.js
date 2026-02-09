@@ -13,21 +13,30 @@ export async function POST(req) {
     let reply = "";
     let mediaUrl = "";
 
+    // 1. QR LOGIC
     if (msg === 'QR' || msg === 'CODE') {
       reply = `🏥 *HealthPay ID: ${COMPANY}*\n\nMember: ${from}\nStatus: ACTIVE\n\nShow this QR at any clinic.`;
-      // Encoded strictly for Twilio's engine
       const qrPayload = `HP-ID|${COMPANY}|${from}`;
       mediaUrl = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(qrPayload)}`;
     } 
+    // 2. BALANCE LOGIC
     else if (msg === '1' || msg === 'BALANCE') {
       reply = `💰 *${COMPANY} Balance*\n\n5000.00 HC\nVerified on Stellar Testnet.`;
     }
+    // 3. SPEND LOGIC (Strict check for amount)
     else if (msg.startsWith('SPEND')) {
-      const amount = msg.replace('SPEND', '').trim();
-      reply = `✅ *Authorized*\nAmount: ${amount} HC\nMerchant: Medical Provider\n\nPurpose-bound lock applied.`;
+      const parts = msg.split(' ');
+      const amount = parts[1];
+      
+      if (!amount || isNaN(amount)) {
+        reply = "⚠️ *Invalid Amount*\n\nPlease use the format: SPEND 500";
+      } else {
+        reply = `✅ *Payment Authorized*\n\nAmount: ${amount} HC\nMerchant: Medical Provider\nStatus: PENDING SETTLEMENT\n\nNote: This is purpose-bound for healthcare.`;
+      }
     }
+    // 4. DEFAULT MENU
     else {
-      reply = `HealthPay.Afrika 🏥\n\n1: Balance\nQR: Get ID\nSPEND [Amt]: Pay Clinic`;
+      reply = `HealthPay.Afrika 🏥\n\n1: Balance\nQR: Get ID\nSPEND [Amt]: Pay Clinic\n\nWelcome back, ${COMPANY} Member.`;
     }
 
     const twiml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -40,6 +49,6 @@ export async function POST(req) {
     
     return new NextResponse(twiml, { headers: { 'Content-Type': 'text/xml' } });
   } catch (err) {
-    return new NextResponse('<Response><Message>Bot active...</Message></Response>', { headers: { 'Content-Type': 'text/xml' } });
+    return new NextResponse('<Response><Message>System active...</Message></Response>', { headers: { 'Content-Type': 'text/xml' } });
   }
 }
